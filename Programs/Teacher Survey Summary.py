@@ -107,22 +107,22 @@ list_of_files = glob.glob('//tx1cifs/tx1data/Austin Share/CLI ScaleUp Grant/Year
 latest_file = max(list_of_files, key=os.path.getctime)
 latest_filename=latest_file.replace("//tx1cifs/tx1data/Austin Share/CLI ScaleUp Grant/Year 2/Data Collection - Students/GRADE Tracking/Summaries\\","")
 
-##def SendNotificaiton ():
-##
-##    msg = MIMEMultipart("alternative", None, [MIMEText(htmltables,'html')])
-##    msg['From'] = "cliscaleup@gmail.com"
-##    #msg['To'] = "jmeakin@air.org"
-##    msg['To'] = "ntucker-bradway@air.org,dmsmith@air.org, jmeakin@air.org, kdrummond@air.org"
-##    msg['Subject'] = "Survey Completion Rates"
-##
-##    server = smtplib.SMTP('smtp.gmail.com', 587)
-##    server.starttls()
-##    server.login("cliscaleup@gmail.com", "CLIstudy4ever!")
-##    text = msg.as_string()
-##    server.sendmail("cliscaleup@gmail.com", msg["To"].split(","), text)
-##    server.quit()
-##
-##SendNotificaiton()
+def SendNotificaiton ():
+
+    msg = MIMEMultipart("alternative", None, [MIMEText(htmltables,'html')])
+    msg['From'] = "cliscaleup@gmail.com"
+    #msg['To'] = "jmeakin@air.org"
+    msg['To'] = "ntucker-bradway@air.org,dmsmith@air.org, jmeakin@air.org, kdrummond@air.org"
+    msg['Subject'] = "Survey Completion Rates"
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login("cliscaleup@gmail.com", "CLIstudy4ever!")
+    text = msg.as_string()
+    server.sendmail("cliscaleup@gmail.com", msg["To"].split(","), text)
+    server.quit()
+
+SendNotificaiton()
 
 
 
