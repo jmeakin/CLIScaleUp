@@ -108,12 +108,15 @@ Compare['Roster SRC Tracker Comparison'] =  Compare.apply(lambda x: 'School/Grad
 
 # Create Summary Tables
 Table1 = Compare.groupby([ 'District','Grade']).sum()['AdminCode10'].to_frame(name = 'Tested Students').reset_index().pivot_table(index=['Grade'], columns=['District'], margins=True, aggfunc=np.sum)
+Table1 = Table1.fillna(value=0)
 Table1=Table1.astype(int)
 
 Table2 = Compare.groupby([ 'District','Grade']).sum()['AdminCodeNot10'].to_frame(name = 'Untested Students').reset_index().pivot_table(index=['Grade'], columns=['District'], margins=True, aggfunc=np.sum)
+Table2 = Table2.fillna(value=0)
 Table2=Table2.astype(int)
 
 Table3 = Compare.groupby([ 'District','Roster SRC Tracker Comparison']).size().to_frame(name = 'Tracking Log').reset_index().pivot_table(index=['Roster SRC Tracker Comparison'], columns=['District'], margins=True, aggfunc=np.sum)
+Table3 = Table3.fillna(value=0)
 Table3=Table3.astype(int)
 
 text = """\
@@ -158,3 +161,6 @@ def SendNotificaiton ():
 	server.quit()
 
 SendNotificaiton()
+
+
+#display(HTML(Compare.to_html()))

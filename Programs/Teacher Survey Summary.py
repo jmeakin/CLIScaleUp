@@ -43,19 +43,73 @@ for f in list_of_files:
         dataframe = dataframe[['Email', 'Started', 'Completed']]
         #dataframe.head()
         surveys = pd.concat([surveys, dataframe], ignore_index=True)
+surveys['Email'] = surveys['Email'].map(lambda x: str(x).strip())
 
-
+#Check Spaces
+'''
+surveys['Email2'] = surveys['Email'].map(lambda x: str(x).strip())
+surveys['compare'] = surveys.apply(lambda x: 1 if x['Email2']!=x['Email'] else 0, axis=1)
+Browse = surveys[surveys.compare == 1]
+display(HTML(Browse.to_html()))
+'''
 
 Tracker = pd.read_excel('//Dc1fs/dc1ehd/share/CLI i3 ScaleUp/3 Data Collection/Teachers/3. Spring 2018 Teacher Survey/Teacher lists/Year 2 Master Teacher Tracker 27 Apr 2018.xlsx')
 Tracker = Tracker[['Email', 'Grade','District' , 'Treatment_1718','TeacherStatus_Y1_Y2']]
 Tracker = Tracker.dropna(axis=0, subset=['Email'],how='all')
+Tracker['Email'] = Tracker['Email'].map(lambda x: str(x).strip())
 
 Survey_Track = mstata.stata_merge(Tracker,surveys,['Email'],'1:1')
 
+'''
+Browse = Survey_Track[Survey_Track._merge == "1 - Using Only"]
+display(HTML(Browse.to_html()))
+'''
+
 Survey_Track['Survey Complete'] =  Survey_Track.apply(lambda x: 1 if pd.notnull(x['Completed']) else 0, axis = 1)
 
+# First Create Archive
+from datetime import date, timedelta
+import shutil
+
+archivepath = '//Dc1fs/dc1ehd/share/CLI i3 ScaleUp/3 Data Collection/Teachers/3. Spring 2018 Teacher Survey/Teacher lists/Archive/'
+currentpath = '//Dc1fs/dc1ehd/share/CLI i3 ScaleUp/3 Data Collection/Teachers/3. Spring 2018 Teacher Survey/Teacher lists/'
+archdate = str(date.today().strftime('%m%d%y'))
+shutil.copyfile(currentpath+'Year 2 Master Teacher Tracker 27 Apr 2018.xlsx', archivepath+'Year 2 Master Teacher Tracker - '+archdate+'.xlsx')
+
+# Update Tracker
+  #1 Keep Complete Rows
+Update = Survey_Track.loc[Survey_Track['Survey Complete'] == 1]
+  #2 Keep Only Email And Complete Column
+Update = Update[['Email','Survey Complete']]
+  #3 Load File Sitting On Share
+ToUpdate = pd.read_excel('//Dc1fs/dc1ehd/share/CLI i3 ScaleUp/3 Data Collection/Teachers/3. Spring 2018 Teacher Survey/Teacher lists/Year 2 Master Teacher Tracker 27 Apr 2018.xlsx')
+  #4 Drop Current Complete Variable
+ToUpdate = ToUpdate.drop(['Survey Complete'], axis=1)
+  #5 Trim Email 
+ToUpdate['Email'] = ToUpdate['Email'].map(lambda x: str(x).strip())
+  # Create An Export Frame Of Current 0/1 "Survey Complete Status" Merged In With Original Data - Need To Merge In Case Sorted On Share
+Export = mstata.stata_merge(ToUpdate,Update,['Email'],'1:1')
+Export = Export.drop(['_merge'], axis=1)
+# Make New Value 0/1
+Export['Survey Complete'] = Export['Survey Complete'].fillna(value=0)
+Export['Survey Complete'] = Export['Survey Complete'].astype(int)
+display(HTML(Export.to_html()))
 
 
+# Use openpyxl To Load Sheet & Export Only The [Survey Complete] Column Into The 16th Place, Preserving Rest Of Sheet
+from openpyxl import load_workbook 
+file = '//Dc1fs/dc1ehd/share/CLI i3 ScaleUp/3 Data Collection/Teachers/3. Spring 2018 Teacher Survey/Teacher lists/Year 2 Master Teacher Tracker 27 Apr 2018.xlsx'
+book = load_workbook(file)
+writer = pd.ExcelWriter(file, engine='openpyxl') 
+writer.book = book
+writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+Export['Survey Complete'].to_excel(writer, sheet_name="Teachers", startcol=16, index=False)
+writer.save()
+# https://stackoverflow.com/questions/43425944/pandas-fromat-column-multiple-sheets?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+# http://xlsxwriter.readthedocs.io/format.html
+# https://stackoverflow.com/questions/20219254/how-to-write-to-an-existing-excel-file-without-overwriting-data-using-pandas
+
+# Tables
 NumTable1 = Survey_Track.groupby(['District','Treatment_1718']).sum()['Survey Complete'].to_frame(name = 'Completion Rates').reset_index().pivot_table(index=['Treatment_1718'], columns=['District'], margins=True, aggfunc=np.sum)
 #Table1 = Table1.round(decimals=2)
 #display(HTML(NumTable1.to_html()))
@@ -89,6 +143,8 @@ text = """\
   <body>
     <p>Hi!<br><br>
        Below are tables describing the survey completion rates <br><br>
+       The Year 2 Master Teacher Tracker located Here: "H:\share\CLI i3 ScaleUp\3 Data Collection\Teachers\3. Spring 2018 Teacher Survey\Teacher lists" has been updated to reflect the current completion status. <br><br>
+       In case of an error, an archived file with the current data has been created and is here: "H:\share\CLI i3 ScaleUp\3 Data Collection\Teachers\3. Spring 2018 Teacher Survey\Teacher lists\Archive" <br><br>
        Cheers!, <br><br>
        John 
     </p>
@@ -123,6 +179,8 @@ def SendNotificaiton ():
     server.quit()
 
 SendNotificaiton()
+
+
 
 
 

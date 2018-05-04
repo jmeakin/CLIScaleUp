@@ -115,8 +115,8 @@ def SendNotificaiton ():
     msg = MIMEMultipart()
      
     msg['From'] = fromaddr
-    msg['To'] = "jmeakin@air.org"
-    #msg['To'] = ntucker-bradway@air.org,dmsmith@air.org, jmeakin@air.org, kdrummond@air.org, kpate@air.org"
+    #msg['To'] = "jmeakin@air.org"
+    msg['To'] = "ntucker-bradway@air.org,dmsmith@air.org, jmeakin@air.org, kpate@air.org"
     msg['Subject'] = "AIR-SRC Shipping Tracking"
      
     body = "Hi,\n\nPlease see attachment for summary of SRC/AIR shipment tracking. \n \nCheers \n \nJohn"
